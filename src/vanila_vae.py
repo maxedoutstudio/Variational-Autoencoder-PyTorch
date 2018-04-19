@@ -41,15 +41,13 @@ totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
     if istrain:
         template = '../data/train/%s.jpg'
+        l = [str(batch_idx*64 + i).zfill(6) for i in range(64)]
     else:
         template = '../data/test/%s.jpg'
-    l = [str(batch_idx*64 + i).zfill(6) for i in range(64)]
+        l = [str(batch_idx*64 + i + 5000).zfill(6) for i in range(64)]
     data = []
     for idx in l:
-        if istrain:
-            img = Image.open(template%idx).convert('RGB')
-        else:
-            img = Image.open(template%(idx+5000)).convert('RGB')
+        img = Image.open(template%idx).convert('RGB')
         #print(img)
         data.append(np.array(img))
     data = [totensor(i) for i in data]
