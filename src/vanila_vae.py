@@ -44,7 +44,7 @@ def load_batch(batch_idx, istrain):
         l = [str(batch_idx*64 + i).zfill(6) for i in range(64)]
     else:
         template = '../data/test/%s.jpg'
-        l = [str(batch_idx*64 + i + 5000).zfill(6) for i in range(64)]
+        l = [str(batch_idx*64 + i + 5086).zfill(6) for i in range(64)]
     data = []
     for idx in l:
         img = Image.open(template%idx).convert('RGB')
