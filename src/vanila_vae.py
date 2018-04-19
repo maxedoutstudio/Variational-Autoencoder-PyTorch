@@ -34,7 +34,7 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-train_loader = range(200)
+train_loader = range(70)
 test_loader = range(40)
 
 totensor = transforms.ToTensor()
