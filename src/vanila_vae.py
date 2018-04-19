@@ -34,7 +34,8 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
-train_loader = range(2080)
+#train_loader = range(2080)
+train_loader = range(5080)
 test_loader = range(40)
 
 totensor = transforms.ToTensor()
@@ -191,13 +192,13 @@ def train(epoch):
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), (len(train_loader)*64),
+                epoch, batch_idx * len(data), (len(train_loader)*1),
                 100. * batch_idx / len(train_loader),
                 loss.data[0] / len(data)))
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / (len(train_loader)*64)))
-    return train_loss / (len(train_loader)*64)
+          epoch, train_loss / (len(train_loader)*1)))
+    return train_loss / (len(train_loader)*1)
 
 def test(epoch):
     model.eval()
