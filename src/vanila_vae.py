@@ -35,7 +35,7 @@ if args.cuda:
 
 kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 train_loader = range(70)
-test_loader = range(40)
+test_loader = range(20)
 
 totensor = transforms.ToTensor()
 def load_batch(batch_idx, istrain):
