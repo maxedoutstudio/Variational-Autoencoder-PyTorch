@@ -1,4 +1,4 @@
-from __future__ import print_function
+#from __future__ import print_function
 import argparse
 import torch
 import torch.utils.data
@@ -15,8 +15,8 @@ import numpy as np
 from PIL import Image
 
 parser = argparse.ArgumentParser(description='PyTorch VAE')
-parser.add_argument('--batch-size', type=int, default=128, metavar='N',
-                    help='input batch size for training (default: 128)')
+parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+                    help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=20, metavar='N',
                     help='number of epochs to train (default: 20)')
 parser.add_argument('--no-cuda', action='store_true', default=False,
@@ -43,12 +43,14 @@ def load_batch(batch_idx, istrain):
         template = '../data/train/%s.jpg'
     else:
         template = '../data/test/%s.jpg'
-    l = [str(batch_idx*128 + i).zfill(6) for i in range(128)]
+    l = [str(batch_idx*64 + i).zfill(6) for i in range(64)]
     data = []
     for idx in l:
-        img = Image.open(template%idx)
+        img = Image.open(template%idx).convert('RGB')
+        #print(img)
         data.append(np.array(img))
     data = [totensor(i) for i in data]
+    #print(data[0].size())
     return torch.stack(data, dim=0)
 
 
@@ -112,12 +114,13 @@ class VAE(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def encode(self, x):
+        #print('asdasd')
         h1 = self.leakyrelu(self.bn1(self.e1(x)))
         h2 = self.leakyrelu(self.bn2(self.e2(h1)))
         h3 = self.leakyrelu(self.bn3(self.e3(h2)))
         h4 = self.leakyrelu(self.bn4(self.e4(h3)))
         h5 = self.leakyrelu(self.bn5(self.e5(h4)))
-        h5 = h5.view(-1, self.ndf*8*4*4)
+        h5 = h5.view(-1, self.ndf*64)#8*4*4)
 
         return self.fc1(h5), self.fc2(h5)
 
@@ -146,13 +149,14 @@ class VAE(nn.Module):
         return z
 
     def forward(self, x):
+        #print("{}, {}, {}, {}".format(-1, self.nc, self.ndf, self.ngf))
         mu, logvar = self.encode(x.view(-1, self.nc, self.ndf, self.ngf))
         z = self.reparametrize(mu, logvar)
         res = self.decode(z)
         return res, mu, logvar
 
 
-model = VAE(nc=3, ngf=128, ndf=128, latent_variable_size=500)
+model = VAE(nc=3, ngf=64, ndf=64, latent_variable_size=500)
 
 if args.cuda:
     model.cuda()
@@ -187,13 +191,13 @@ def train(epoch):
         optimizer.step()
         if batch_idx % args.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), (len(train_loader)*128),
+                epoch, batch_idx * len(data), (len(train_loader)*64),
                 100. * batch_idx / len(train_loader),
                 loss.data[0] / len(data)))
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / (len(train_loader)*128)))
-    return train_loss / (len(train_loader)*128)
+          epoch, train_loss / (len(train_loader)*64)))
+    return train_loss / (len(train_loader)*64)
 
 def test(epoch):
     model.eval()
@@ -209,7 +213,7 @@ def test(epoch):
         torchvision.utils.save_image(data.data, '../imgs/Epoch_{}_data.jpg'.format(epoch), nrow=8, padding=2)
         torchvision.utils.save_image(recon_batch.data, '../imgs/Epoch_{}_recon.jpg'.format(epoch), nrow=8, padding=2)
 
-    test_loss /= (len(test_loader)*128)
+    test_loss /= (len(test_loader)*64)
     print('====> Test set loss: {:.4f}'.format(test_loss))
     return test_loss
 
@@ -284,14 +288,15 @@ def rand_faces(num=5):
 
 def load_last_model():
     models = glob('../models/*.pth')
-    model_ids = [(int(f.split('_')[1]), f) for f in models]
+    print([(f.split('_')) for f in models])
+    model_ids = [(int(f.split('_')[2]), f) for f in models]
     start_epoch, last_cp = max(model_ids, key=lambda item:item[0])
     print('Last checkpoint: ', last_cp)
     model.load_state_dict(torch.load(last_cp))
     return start_epoch, last_cp
 
 def resume_training():
-    start_epoch, _ = load_last_model()
+    start_epoch, _ = (0,0) #load_last_model()
 
     for epoch in range(start_epoch + 1, start_epoch + args.epochs + 1):
         train_loss = train(epoch)
