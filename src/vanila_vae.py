@@ -46,7 +46,10 @@ def load_batch(batch_idx, istrain):
     l = [str(batch_idx*64 + i).zfill(6) for i in range(64)]
     data = []
     for idx in l:
-        img = Image.open(template%idx).convert('RGB')
+        if istrain:
+            img = Image.open(template%idx).convert('RGB')
+        else:
+            img = Image.open(template%(idx+5000)).convert('RGB')
         #print(img)
         data.append(np.array(img))
     data = [totensor(i) for i in data]
